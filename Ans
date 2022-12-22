@@ -1,0 +1,144 @@
+1/
+public class CountUppercase {
+    static final int ITERATIONS = Math.max(Integer.getInteger("iterations", 1), 1);
+    public static void main(String[] args) {
+        String sentence = String.join(" ", args);
+        for (int iter = 0; iter < ITERATIONS; iter++) {
+            if (ITERATIONS != 1) System.out.println("-- iteration " + (iter + 1) + " --");
+            long total = 0, start = System.currentTimeMillis(), last = start;
+            for (int i = 1; i < 10_000_000; i++) {
+                total += sentence.chars().filter(Character::isUpperCase).count();
+                if (i % 1_000_000 == 0) {
+                    long now = System.currentTimeMillis();
+                    System.out.printf("%d (%d ms)%n", i / 1_000_000, now - last);
+                    last = now;
+                }
+            }
+            System.out.printf("total: %d (%d ms)%n", total, System.currentTimeMillis() - start);
+        }
+    }
+}
+
+javac CountUppercase.java
+java CountUppercase This year I would like to run ALL languages in one VM.
+1 (319 ms)
+2 (275 ms)
+3 (164 ms)
+4 (113 ms)
+5 (100 ms)
+6 (124 ms)
+7 (86 ms)
+8 (76 ms)
+9 (77 ms)
+total: 69999993 (1414 ms)
+______________________________________________
+2/
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-bom</artifactId>
+            <version>1.17.6</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+___________________________________________
+3/
+
+
+@RestController
+public class HelloWorldController {
+
+  @RequestMapping("/")
+  String helloWorld() {
+    return "Hello World!";
+  }
+
+}
+___________________________________________
+4/
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.oracle</groupId>
+    <artifactId>ojdbc7</artifactId>
+    <version>12.1.0.1</version>
+</dependency>
+<!--
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>test</scope>
+</dependency>
+-->
+
+spring.jpa.hibernate.ddl-auto=none
+spring.datasource.url=jdbc:mysql://https://www.youtube.com/watch?v=VfwP3GOridU/todo_example
+spring.datasource.username=todouser
+spring.datasource.password=YOUR_PASSWORD
+spring.jpa.hibernate.
+__________________________________________________
+5/
+resource "aws_apigatewayv2_api" "lambda" {
+  name          = "serverless_lambda_gw"
+  protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_stage" "lambda" {
+  api_id = aws_apigatewayv2_api.lambda.id
+
+  name        = "serverless_lambda_stage"
+  auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gw.arn
+
+    format = jsonencode({
+      requestId               = "$context.requestId"
+      sourceIp                = "$context.identity.sourceIp"
+      requestTime             = "$context.requestTime"
+      protocol                = "$context.protocol"
+      httpMethod              = "$context.httpMethod"
+      resourcePath            = "$context.resourcePath"
+      routeKey                = "$context.routeKey"
+      status                  = "$context.status"
+      responseLength          = "$context.responseLength"
+      integrationErrorMessage = "$context.integrationErrorMessage"
+      }
+    )
+  }
+}
+
+resource "aws_apigatewayv2_integration" "hello_world" {
+  api_id = aws_apigatewayv2_api.lambda.id
+
+  integration_uri    = aws_lambda_function.hello_world.invoke_arn
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
+}
+
+resource "aws_apigatewayv2_route" "hello_world" {
+  api_id = aws_apigatewayv2_api.lambda.id
+
+  route_key = "GET /hello"
+  target    = "integrations/${aws_apigatewayv2_integration.hello_world.id}"
+}
+
+resource "aws_cloudwatch_log_group" "api_gw" {
+  name = "/aws/api_gw/${aws_apigatewayv2_api.lambda.name}"
+
+  retention_in_days = 30
+}
+
+resource "aws_lambda_permission" "api_gw" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.hello_world.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
+}
